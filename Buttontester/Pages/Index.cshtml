@@ -38,6 +38,13 @@
             margin: 10px 10px;
             background-color: #EAEAEA;
         }
+
+        #error-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -86,6 +93,13 @@
                 </div>
             </article>
         </dialog>
+        <dialog id="error-modal">
+            <div id="error-content">
+                <h2>Erreur d'initialisation</h2>
+                <p id="error-message"></p>
+                <button id="refreshButton">Rafraîchir la page</button>
+            </div>
+        </dialog>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <script>
@@ -101,6 +115,7 @@
                 lorawanDeviceId: 'id-lorawan' // Remplacez par l'ID réel de votre appareil LoRaWAN
             },
             mounted() {
+                this.initNetworks();				  
                 document.getElementById('nextButton1').addEventListener('click', () => this.nextStep(2));
                 document.getElementById('nextButton2').addEventListener('click', () => this.nextStep(3));
                 document.getElementById('launchButton').addEventListener('click', this.finishTest);
@@ -152,6 +167,25 @@
                         console.error('Error fetching Lorawan status:', error);
                         this.lorawanStatus = 'Error';
                     }
+                },
+                async initNetworks() {
+                    try {
+                        const response = await fetch(`/init-networks/${this.sigfoxDeviceId}/${this.lorawanDeviceId}`);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        console.log('Networks initialized successfully.');
+                    } catch (error) {
+                        console.error('Error initializing networks:', error);
+                        // Here you can add code to handle the error, for example:
+                        this.showErrorModal(error);
+                    }
+                },
+                showErrorModal(error) {
+                    this.errorMessage = error.message;
+                    document.getElementById('error-message').innerText = this.errorMessage;
+                    document.getElementById('error-modal').showModal();
+					document.getElementById('refreshButton').addEventListener('click', () => location.reload());
                 }
             }
         });
