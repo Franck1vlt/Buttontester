@@ -1,0 +1,18 @@
+@host=https://localhost:7139
+GET {{host}}/init-networks/id-sigfox/id-lorawan
+###
+
+POST {{host}}/sigfox/id-sigfox
+Accept: application/json
+###
+
+POST {{host}}/lorawan/id-lorawan
+Accept: application/json
+###
+
+GET {{host}}/sigfox/id-sigfox
+###
+
+GET {{host}}/lorawan/id-lorawan
+###
+

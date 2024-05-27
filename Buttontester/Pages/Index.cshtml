@@ -1,0 +1,128 @@
+﻿@page
+@model Buttontester.Pages.IndexModel
+@{
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buttontester</title>
+    <!-- Inclure le fichier CSS de Picocss -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css" integrity="sha512-UXfikgakSZBii5lkvmDCRO+IYWQhTtwMOJ+3EmGEA+oA82kvbSskgw3OI16Jx1kINgF8aqOkYE+c9h4m6muONg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <section id="modal">
+        <h2>Test dégibilité à Sigfox et Lorawan</h2>
+        <button class="contrast" data-target="modal-example" onclick="toggleModal(event)">Démarer le test</button>
+    </section>
+    <dialog id="modal-example">
+      <article>
+        <header>
+          <h3>Démarer le test d'égibilité</h3>
+        </header>
+        <!-- Contenu initial -->
+        <div id="modalContent1">
+            <p>
+              Les Cramptés de Raphael
+            </p>
+            <!-- Bouton suivant -->
+            <button class="secondary" onclick="showNextContent(2)">Suivant</button>
+        </div>
+        <!-- Contenu 2 -->
+        <div id="modalContent2" style="display: none;">
+            <p>Contenu 2</p>
+            <button class="secondary" onclick="showNextContent(3)">Suivant</button>
+        </div>
+        <!-- Contenu 3 -->
+        <div id="modalContent3" style="display: none;">
+            <p>Contenu 3</p>
+            <!-- Boutons Cancel et Confirm -->
+            <footer>
+              <button autofocus data-target="modal-example" onclick="toggleModal(event)">Lancer</button>
+            </footer>
+        </div>
+      </article>
+    </dialog>
+    <script>
+        // Config
+        const isOpenClass = "modal-is-open";
+        const openingClass = "modal-is-opening";
+        const closingClass = "modal-is-closing";
+        const scrollbarWidthCssVar = "--pico-scrollbar-width";
+        const animationDuration = 400; // ms
+        let visibleModal = null;
+
+        // Fonction pour afficher le contenu suivant
+        function showNextContent(contentNumber) {
+            // Masquer tous les contenus
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById("modalContent" + i).style.display = "none";
+            }
+            // Afficher le contenu correspondant au numéro spécifié
+            document.getElementById("modalContent" + contentNumber).style.display = "block";
+        }
+
+        // Toggle modal
+        const toggleModal = (event) => {
+          event.preventDefault();
+          const modal = document.getElementById(event.currentTarget.dataset.target);
+          if (!modal) return;
+          modal && (modal.open ? closeModal(modal) : openModal(modal));
+        };
+
+        // Open modal
+        const openModal = (modal) => {
+          const { documentElement: html } = document;
+          const scrollbarWidth = getScrollbarWidth();
+          if (scrollbarWidth) {
+            html.style.setProperty(scrollbarWidthCssVar, `${scrollbarWidth}px`);
+          }
+          html.classList.add(isOpenClass, openingClass);
+          setTimeout(() => {
+            visibleModal = modal;
+            html.classList.remove(openingClass);
+          }, animationDuration);
+          modal.showModal();
+        };
+
+        // Close modal
+        const closeModal = (modal) => {
+          visibleModal = null;
+          const { documentElement: html } = document;
+          html.classList.add(closingClass);
+          setTimeout(() => {
+            html.classList.remove(closingClass, isOpenClass);
+            html.style.removeProperty(scrollbarWidthCssVar);
+            modal.close();
+          }, animationDuration);
+        };
+
+        // Close with Esc key
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && visibleModal) {
+            closeModal(visibleModal);
+          }
+        });
+
+        // Get scrollbar width
+        const getScrollbarWidth = () => {
+          const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+          return scrollbarWidth;
+        };
+
+        // Is scrollbar visible
+        const isScrollbarVisible = () => {
+          return document.body.scrollHeight > screen.height;
+        };
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
