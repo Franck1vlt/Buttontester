@@ -19,7 +19,7 @@
         <h2>Test d'égibilité à Sigfox et Lorawan</h2>
         <button class="contrast" data-target="modal-example" onclick="toggleModal(event)">Démarer le test</button>
     </section>
-    <dialog id="modal-example">
+    <dialog id="modal-example" >
         <article>
             <header>
                 <h3>Démarer le test d'égibilité</h3>
@@ -74,14 +74,23 @@
                     sigfoxStatus: null,
                     lorawanStatus: null,
                     sigfoxDeviceId: 'id-sigfox', // Remplacez par l'ID réel de votre appareil Sigfox
-                    lorawanDeviceId: 'id-lorawan' // Remplacez par l'ID réel de votre appareil LoRaWAN
+                    lorawanDeviceId: 'id-lorawan', // Remplacez par l'ID réel de votre appareil LoRaWAN
+                    timer:null
                 };
             },
             mounted() {
                 this.checkSigfoxStatus();
                 this.checkLorawanStatus();
+                this.initNetwork();
             },
             methods: {
+                async initNetwork() { 
+                    try {
+                        const response = await fetch('https://localhost:7139/init-networks/id-sigfox/id-lorawan')
+                    } catch(error) {
+                        console.error('Error during network initialization:', error);
+                    }
+                },
                 async checkSigfoxStatus() {
                     try {
                         const response = await fetch(`https://localhost:7139/sigfox/${this.sigfoxDeviceId}`);
