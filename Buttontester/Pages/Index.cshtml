@@ -13,10 +13,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css" integrity="sha512-UXfikgakSZBii5lkvmDCRO+IYWQhTtwMOJ+3EmGEA+oA82kvbSskgw3OI16Jx1kINgF8aqOkYE+c9h4m6muONg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+
     <section id="modal">
-        <h2>Test dégibilité à Sigfox et Lorawan</h2>
+        <h2>Test d'égibilité à Sigfox et Lorawan</h2>
         <button class="contrast" data-target="modal-example" onclick="toggleModal(event)">Démarer le test</button>
     </section>
+
     <dialog id="modal-example">
       <article>
         <header>
@@ -25,14 +27,14 @@
         <!-- Contenu initial -->
         <div id="modalContent1">
             <p>
-              Les Cramptés de Raphael
+              Description
             </p>
             <!-- Bouton suivant -->
             <button class="secondary" onclick="showNextContent(2)">Suivant</button>
         </div>
         <!-- Contenu 2 -->
         <div id="modalContent2" style="display: none;">
-            <p>Contenu 2</p>
+            <p>Guide</p>
             <button class="secondary" onclick="showNextContent(3)">Suivant</button>
         </div>
         <!-- Contenu 3 -->
@@ -40,11 +42,36 @@
             <p>Contenu 3</p>
             <!-- Boutons Cancel et Confirm -->
             <footer>
-              <button autofocus data-target="modal-example" onclick="toggleModal(event)">Lancer</button>
+              <button autofocus data-target="modal-example" onclick="launchTest()">Lancer</button>
             </footer>
         </div>
       </article>
     </dialog>
+
+    <!-- Conteneurs pour les tableaux -->
+    <section id="results" style="display: none;">
+        <h2>Résultats du test</h2>
+        <div class="flex-container">
+            <div class="column">
+                <table id="table1">
+                    <thead>
+                        <tr>
+                            <th>Sigfox</th>
+                            <th>Lorawan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Donnée 1</td>
+                            <td>Donnée 2</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+
     <script>
         // Config
         const isOpenClass = "modal-is-open";
@@ -112,10 +139,17 @@
           return scrollbarWidth;
         };
 
-        // Is scrollbar visible
-        const isScrollbarVisible = () => {
-          return document.body.scrollHeight > screen.height;
+        // // Is scrollbar visible
+        // const isScrollbarVisible = () => {
+        //   return document.body.scrollHeight > screen.height;
+        // };
+
+        // Fonction pour lancer le test et afficher les tableaux
+        const launchTest = () => {
+            closeModal(document.getElementById("modal-example"));
+            document.getElementById("results").style.display = "block";
         };
+
     </script>
 
 </body>

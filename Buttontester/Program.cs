@@ -4,6 +4,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMemoryCache();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenLocalhost(7139, listenOptions =>
+    {
+        listenOptions.UseHttps();
+    });
+    options.ListenLocalhost(5139);
+});
+
 var app = builder.Build();
 
 
