@@ -45,6 +45,11 @@
             align-items: center;
             justify-content: center;
         }
+
+        .spinner {
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -56,11 +61,17 @@
                 <h3>Résultats :</h3>
                 <article>
                     <h4>Sigfox</h4>
-                    <p>Capteur éligible : {{ sigfoxStatus }}</p>
+                    <div v-if="showSpinner" class="spinner">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                    <p v-else>Capteur éligible : {{ sigfoxStatus }}</p>
                 </article>
                 <article>
                     <h4>LoRaWAN</h4>
-                    <p>Capteur éligible : {{ lorawanStatus }}</p>
+                    <div v-if="showSpinner" class="spinner">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                    <p v-else>Capteur éligible : {{ lorawanStatus }}</p>
                 </article>
             </div>
         </section>
@@ -109,16 +120,18 @@
                 currentStep: 1,
                 isModalOpen: true, // Set to true to keep the modal open by default
                 showResults: false,
+                showSpinner: false,
                 sigfoxStatus: null,
                 lorawanStatus: null,
                 sigfoxDeviceId: 'id-sigfox', // Remplacez par l'ID réel de votre appareil Sigfox
-                lorawanDeviceId: 'id-lorawan' // Remplacez par l'ID réel de votre appareil LoRaWAN
+                lorawanDeviceId: 'id-lorawan', // Remplacez par l'ID réel de votre appareil LoRaWAN
+                spinnerTimeout: 60000 // Default spinner timeout set to 10s (60000ms)
             },
             mounted() {
                 this.initNetworks();				  
                 document.getElementById('nextButton1').addEventListener('click', () => this.nextStep(2));
                 document.getElementById('nextButton2').addEventListener('click', () => this.nextStep(3));
-                document.getElementById('launchButton').addEventListener('click', this.finishTest);
+                document.getElementById('launchButton').addEventListener('click', this.startTest);
                 this.checkSigfoxStatus();
                 this.checkLorawanStatus();
             },
@@ -127,12 +140,19 @@
                     this.currentStep = step;
                     this.updateModalContent();
                 },
-                finishTest() {
-                    this.isModalOpen = false;
+                startTest() {
+                    this.showSpinner = true;
                     this.showResults = true;
                     document.getElementById('modal-example').close();
-                    this.checkDeviceStatus('sigfox', this.sigfoxDeviceId); // Change 'deviceSigfox' with the actual device ID or variable
-                    this.checkDeviceStatus('lorawan', this.lorawanDeviceId); // Change 'deviceLoraWan' with the actual device ID or variable
+                    setTimeout(() => {
+                        this.finishTest();
+                    }, this.spinnerTimeout);
+                },
+
+                finishTest() {
+                    this.showSpinner = false;
+                    this.checkDeviceStatus('sigfox', this.sigfoxDeviceId);
+                    this.checkDeviceStatus('lorawan', this.lorawanDeviceId);
                 },
                 updateModalContent() {
                     for (let i = 1; i <= 3; i++) {
@@ -170,6 +190,12 @@
                 },
                 async initNetworks() {
                     try {
+                        // Ajouter une vérification pour éviter l'initialisation si le test est déjà en cours
+                        if (this.showResults) {
+                            console.log('Networks already initialized.');
+                            return;
+                        }
+        
                         const response = await fetch(`/init-networks/${this.sigfoxDeviceId}/${this.lorawanDeviceId}`);
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
@@ -177,8 +203,8 @@
                         console.log('Networks initialized successfully.');
                     } catch (error) {
                         console.error('Error initializing networks:', error);
-                        // Here you can add code to handle the error, for example:
-                        this.showErrorModal(error);
+                        // Ici, vous pouvez choisir de ne pas afficher d'erreur en cas d'initialisation
+                        // this.showErrorModal(error);
                     }
                 },
                 showErrorModal(error) {
