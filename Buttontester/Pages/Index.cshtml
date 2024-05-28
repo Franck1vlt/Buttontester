@@ -173,18 +173,7 @@
                     }
                     document.getElementById('modalContent' + this.currentStep).classList.remove('hidden');
                 },
-                async TestTimeoutSigfox () {
-					let IntervalSigfox = setInterval(this.checkSigfoxStatus(), 1000);)
-					setTimeout() => {
-						clearInterval(IntervalSigfox);
-					},  this.maxWaitTime);
-				},
-				async TestTimeoutLorawan () {
-					let IntervalLorawan = setInterval(this.checkLorawanStatus(), 1000);)
-					setTimeout() => {
-						clearInterval(IntervalLorawan);
-					}, this.maxWaitTime);
-				},
+
                 async checkStatuses() {
                     await this.checkSigfoxStatus();
                     await this.checkLorawanStatus();
