@@ -32,23 +32,31 @@
             text-align: center;
             margin-top: 20px;
         }
-
         #results article {
             display: inline-block;
             margin: 10px 10px;
             background-color: #EAEAEA;
+            width: 250px;
+            padding: 50px;
+            border-radius: 5px;
         }
-
         #error-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
-
         .spinner {
             text-align: center;
             margin-top: 20px;
+        }
+        .refresh {
+            margin-top: 20px;
+            color: white;
+        }
+        a {
+            text-decoration: none;
+            color: white;
         }
     </style>
 </head>
@@ -64,16 +72,17 @@
                     <div v-if="showSpinner" class="spinner">
                         <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                    <p v-else>Capteur éligible : {{ sigfoxStatus }}</p>
+                    <p v-else>{{ sigfoxStatus }}</p>
                 </article>
                 <article>
                     <h4>LoRaWAN</h4>
                     <div v-if="showSpinner" class="spinner">
                         <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                    <p v-else>Capteur éligible : {{ lorawanStatus }}</p>
+                    <p v-else>{{ lorawanStatus }}</p>
                 </article>
             </div>
+            <button class="secondary refresh"><a href="https://localhost:7139">Redémarrer un test</a></button>
         </section>
         <dialog id="modal-example" open>
             <article>
@@ -118,22 +127,21 @@
             el: '#app',
             data: {
                 currentStep: 1,
-                isModalOpen: true, // Set to true to keep the modal open by default
+                isModalOpen: true,
                 showResults: false,
                 showSpinner: false,
                 sigfoxStatus: null,
                 lorawanStatus: null,
-                sigfoxDeviceId: 'id-sigfox', // Remplacez par l'ID réel de votre appareil Sigfox
-                lorawanDeviceId: 'id-lorawan', // Remplacez par l'ID réel de votre appareil LoRaWAN
-                spinnerTimeout: 60000 // Default spinner timeout set to 10s (60000ms)
+                sigfoxDeviceId: 'id-sigfox',
+                lorawanDeviceId: 'id-lorawan',
+                checkInterval: null,
+                maxWaitTime: 60000,
+                startTime: null
             },
             mounted() {
-                this.initNetworks();				  
                 document.getElementById('nextButton1').addEventListener('click', () => this.nextStep(2));
                 document.getElementById('nextButton2').addEventListener('click', () => this.nextStep(3));
                 document.getElementById('launchButton').addEventListener('click', this.startTest);
-                this.checkSigfoxStatus();
-                this.checkLorawanStatus();
             },
             methods: {
                 nextStep(step) {
@@ -143,16 +151,21 @@
                 startTest() {
                     this.showSpinner = true;
                     this.showResults = true;
+                    this.startTime = Date.now();
                     document.getElementById('modal-example').close();
-                    setTimeout(() => {
-                        this.finishTest();
-                    }, this.spinnerTimeout);
+                    this.initNetworks();
+                    this.checkInterval = setInterval(this.checkStatuses, 1000);
+                    setTimeout(this.finishTest, this.maxWaitTime);
                 },
-
                 finishTest() {
+                    if (!this.sigfoxStatus) {
+                        this.sigfoxStatus = 'Not Found';
+                    }
+                    if (!this.lorawanStatus) {
+                        this.lorawanStatus = 'Not Found';
+                    }
                     this.showSpinner = false;
-                    this.checkDeviceStatus('sigfox', this.sigfoxDeviceId);
-                    this.checkDeviceStatus('lorawan', this.lorawanDeviceId);
+                    clearInterval(this.checkInterval);
                 },
                 updateModalContent() {
                     for (let i = 1; i <= 3; i++) {
@@ -160,42 +173,52 @@
                     }
                     document.getElementById('modalContent' + this.currentStep).classList.remove('hidden');
                 },
+                async TestTimeoutSigfox () {
+					let IntervalSigfox = setInterval(this.checkSigfoxStatus(), 1000);)
+					setTimeout() => {
+						clearInterval(IntervalSigfox);
+					},  this.maxWaitTime);
+				},
+				async TestTimeoutLorawan () {
+					let IntervalLorawan = setInterval(this.checkLorawanStatus(), 1000);)
+					setTimeout() => {
+						clearInterval(IntervalLorawan);
+					}, this.maxWaitTime);
+				},
+                async checkStatuses() {
+                    await this.checkSigfoxStatus();
+                    await this.checkLorawanStatus();
+                    if (this.sigfoxStatus && this.lorawanStatus) {
+                        clearInterval(this.checkInterval);
+                        setTimeout(this.finishTest, 0);
+                    }
+                },
                 async checkSigfoxStatus() {
+                    if (this.sigfoxStatus) return;
                     try {
                         const response = await fetch(`https://localhost:7139/sigfox/${this.sigfoxDeviceId}`);
                         if (response.ok) {
-                            const data = await response.json(); // Convertir la réponse en JSON
-                            this.sigfoxStatus = data.result; // Utiliser la propriété "status" de l'objet JSON
-                        } else {
-                            this.sigfoxStatus = 'Not Found';
+                            const data = await response.json();
+                            this.sigfoxStatus = data.result;
                         }
                     } catch (error) {
                         console.error('Error fetching Sigfox status:', error);
-                        this.sigfoxStatus = 'Error';
                     }
                 },
                 async checkLorawanStatus() {
+                    if (this.lorawanStatus) return;
                     try {
                         const response = await fetch(`https://localhost:7139/lorawan/${this.lorawanDeviceId}`);
                         if (response.ok) {
-                            const data = await response.json(); 
-                            this.lorawanStatus = data.result; 
-                        } else {
-                            this.lorawanStatus = 'Not Found';
+                            const data = await response.json();
+                            this.lorawanStatus = data.result;
                         }
                     } catch (error) {
                         console.error('Error fetching Lorawan status:', error);
-                        this.lorawanStatus = 'Error';
                     }
                 },
                 async initNetworks() {
                     try {
-                        // Ajouter une vérification pour éviter l'initialisation si le test est déjà en cours
-                        if (this.showResults) {
-                            console.log('Networks already initialized.');
-                            return;
-                        }
-        
                         const response = await fetch(`/init-networks/${this.sigfoxDeviceId}/${this.lorawanDeviceId}`);
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
@@ -203,15 +226,13 @@
                         console.log('Networks initialized successfully.');
                     } catch (error) {
                         console.error('Error initializing networks:', error);
-                        // Ici, vous pouvez choisir de ne pas afficher d'erreur en cas d'initialisation
-                        // this.showErrorModal(error);
                     }
                 },
                 showErrorModal(error) {
                     this.errorMessage = error.message;
                     document.getElementById('error-message').innerText = this.errorMessage;
                     document.getElementById('error-modal').showModal();
-					document.getElementById('refreshButton').addEventListener('click', () => location.reload());
+                    document.getElementById('refreshButton').addEventListener('click', () => location.reload());
                 }
             }
         });
