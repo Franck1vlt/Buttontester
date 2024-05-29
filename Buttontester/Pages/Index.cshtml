@@ -37,9 +37,20 @@
             margin: 10px 10px;
             background-color: #EAEAEA;
             width: 250px;
+            height: 175px; 
             padding: 50px;
             border-radius: 5px;
+            vertical-align: top; 
+            box-sizing: border-box;
         }
+
+        #results .fa, #results .not-found {
+            font-size: 24px;
+            display: block;
+            text-align: center; 
+            line-height: 24px; 
+        }
+
         #error-content {
             display: flex;
             flex-direction: column;
@@ -69,19 +80,24 @@
                 <h3>Résultats :</h3>
                 <article>
                     <h4>Sigfox</h4>
-                    <div v-if="showSpinner" class="spinner">
+                    <div v-if="showSpinner && sigfoxStatus === null" class="spinner">
                         <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                    <p v-else>{{ sigfoxStatus }}</p>
+                    <i v-if="sigfoxStatus === true" class="fa fa-check" style="color:green"></i>
+                    <i v-if="sigfoxStatus === false" class="fa fa-close" style="color:red"></i>
+                    <p v-if="sigfoxStatus === 'Not Found'" class="not-found">Not Found</p>
                 </article>
                 <article>
                     <h4>LoRaWAN</h4>
-                    <div v-if="showSpinner" class="spinner">
+                    <div v-if="showSpinner && lorawanStatus === null" class="spinner">
                         <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                    <p v-else>{{ lorawanStatus }}</p>
+                    <i v-if="lorawanStatus === true" class="fa fa-check" style="color:green"></i>
+                    <i v-if="lorawanStatus === false" class="fa fa-close" style="color:red"></i>
+                    <p v-if="lorawanStatus === 'Not Found'" class="not-found">Not Found</p>
                 </article>
             </div>
+
             <button class="secondary refresh"><a href="https://localhost:7139">Redémarrer un test</a></button>
         </section>
         <dialog id="modal-example" open>
@@ -135,7 +151,7 @@
                 sigfoxDeviceId: 'id-sigfox',
                 lorawanDeviceId: 'id-lorawan',
                 checkInterval: null,
-                maxWaitTime: 60000,
+                maxWaitTime: 10000,
                 startTime: null
             },
             mounted() {
@@ -158,10 +174,10 @@
                     setTimeout(this.finishTest, this.maxWaitTime);
                 },
                 finishTest() {
-                    if (!this.sigfoxStatus) {
+                    if (this.sigfoxStatus === null) {
                         this.sigfoxStatus = 'Not Found';
                     }
-                    if (!this.lorawanStatus) {
+                    if (this.lorawanStatus === null) {
                         this.lorawanStatus = 'Not Found';
                     }
                     this.showSpinner = false;
