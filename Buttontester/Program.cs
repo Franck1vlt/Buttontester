@@ -29,7 +29,8 @@ app.MapPost("/sigfox/{device}", (string device, IMemoryCache cache) =>
 app.MapPost("/lorawan/{device}", (string device, [FromBody] LoRaWANPayload payload, IMemoryCache cache) =>
 {
     if (device != null)
-        cache.Set(device, new { Result = true, SignalLevel = payload.Metadata.Network.Lora.SignalLevel, GatewayCnt = payload.Metadata.Network.Lora.GatewayCnt });
+        payload.Metadata.Network.Lora.DevEUI = device;
+        cache.Set(device, new { Result = true });
     return Results.Ok();
 });
 
