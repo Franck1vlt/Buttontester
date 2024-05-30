@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,9 +26,10 @@ app.MapPost("/sigfox/{device}", (string device, IMemoryCache cache) =>
     return Results.Ok();
 });
 
-app.MapPost("/lorawan/{device}", (string device, IMemoryCache cache) =>
+app.MapPost("/lorawan/{device}", (string device, [FromBody] LoRaWANPayload payload, IMemoryCache cache) =>
 {
     if (device != null)
+        payload.Metadata.Network.Lora.DevEUI = device;
         cache.Set(device, new { Result = true });
     return Results.Ok();
 });
