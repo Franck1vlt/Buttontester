@@ -36,8 +36,8 @@
             display: inline-block;
             margin: 10px 10px;
             background-color: #EAEAEA;
-            width: 250px;
-            height: 175px; 
+            width: 275px;
+            height: 170px; 
             padding: 50px;
             border-radius: 5px;
             vertical-align: top; 
@@ -92,8 +92,9 @@
                     <div v-if="showSpinner && lorawanStatus === null" class="spinner">
                         <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                    <i v-if="lorawanStatus === true" class="fa fa-check" style="color:green"></i>
-                    <i v-if="lorawanStatus === false" class="fa fa-close" style="color:red"></i>
+                    <div v-if="lorawanStatus !== null">
+						<p><strong>Qualité: {{LoraSignalLevel}} ({{LoraGatewayCnt}} antennes)</strong></p>
+					</div>
                     <p v-if="lorawanStatus === 'Not Found'" class="not-found">Not Found</p>
                 </article>
             </div>
@@ -151,6 +152,8 @@
                 sigfoxDeviceId: 'id-sigfox',
                 lorawanDeviceId: 'id-lorawan',
                 checkInterval: null,
+                LoraGatewayCnt: null,
+                LoraSignalLevel: null,
                 maxWaitTime: 60000,
                 startTime: null
             },
@@ -222,6 +225,8 @@
                         if (response.ok) {
                             const data = await response.json();
                             this.lorawanStatus = data.result;
+                            this.LoraGatewayCnt = data.gatewayCnt;
+                            this.LoraSignalLevel = data.signalLevel;
                         }
                     } catch (error) {
                         console.error('Error fetching Lorawan status:', error);
