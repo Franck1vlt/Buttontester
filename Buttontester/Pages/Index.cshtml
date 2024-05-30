@@ -206,7 +206,7 @@
                 async checkSigfoxStatus() {
                     if (this.sigfoxStatus) return;
                     try {
-                        const response = await fetch(`http://localhost:7139/sigfox/${this.sigfoxDeviceId}`);
+                        const response = await fetch(`/sigfox/${this.sigfoxDeviceId}`);
                         if (response.ok) {
                             const data = await response.json();
                             this.sigfoxStatus = data.result;
@@ -218,7 +218,7 @@
                 async checkLorawanStatus() {
                     if (this.lorawanStatus) return;
                     try {
-                        const response = await fetch(`http://localhost:7139/lorawan/${this.lorawanDeviceId}`);
+                        const response = await fetch(`/lorawan/${this.lorawanDeviceId}`);
                         if (response.ok) {
                             const data = await response.json();
                             this.lorawanStatus = data.result;
