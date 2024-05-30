@@ -27,12 +27,12 @@ public class Network
 
 public class Lora
 {
-    [JsonPropertyName("devEUI")]
-    public string DevEUI { get; set; }
+    //[JsonPropertyName("devEUI")]
+    //public string DevEUI { get; set; }
 
     [JsonPropertyName("signalLevel")]
     public int SignalLevel { get; set; }
 
-    [JsonPropertyName("gatewayCnt")]
-    public int GatewayCnt { get; set; }
+    //[JsonPropertyName("gatewayCnt")]
+    //public int GatewayCnt { get; set; }
 }

@@ -4,6 +4,17 @@ GET {{host}}/init-networks/21/loraWanDeviceId
 
 POST {{host}}/sigfox/21
 Accept: application/json
+Content-Type: application/json
+{
+  "result": true,
+  "metadata": {
+    "network": {
+      "lora": {
+        "signalLevel": 5
+      }
+    }
+  }
+}
 ###
 
 POST {{host}}/lorawan/loraWanDeviceId

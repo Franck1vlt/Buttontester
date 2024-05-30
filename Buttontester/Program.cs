@@ -26,11 +26,10 @@ app.MapPost("/sigfox/{device}", (string device, IMemoryCache cache) =>
     return Results.Ok();
 });
 
-app.MapPost("/lorawan/{device}", (string device, [FromBody] LoRaWANPayload payload, IMemoryCache cache) =>
+app.MapPost("/lorawan/{device}", (string device, LoRaWANPayload payload, IMemoryCache cache) =>
 {
     if (device != null)
-        payload.Metadata.Network.Lora.DevEUI = device;
-        cache.Set(device, new { Result = true });
+        cache.Set(device, payload);
     return Results.Ok();
 });
 
@@ -43,8 +42,8 @@ app.MapGet("/sigfox/{device}", (string device, IMemoryCache cache) =>
 
 app.MapGet("/lorawan/{device}", (string device, IMemoryCache cache) =>
 {
-    if (device != null)
-        return Results.Ok(cache.Get(device));
+    if (device != null && cache.TryGetValue(device, out LoRaWANPayload payload))
+        return Results.Ok(payload);
     return Results.NotFound();
 });
 

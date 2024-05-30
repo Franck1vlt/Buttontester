@@ -94,7 +94,7 @@
                     </div>
                     <i v-if="lorawanStatus === true" class="fa fa-check" style="color:green"></i>
                     <i v-if="lorawanStatus === false" class="fa fa-close" style="color:red"></i>
-                    <p v-if="lorawanStatus === 'Not Found'" class="not-found">Not Found</p>
+                    <p v-if="lorawanStatus !== null && lorawanSignalLevel !== null">Signal Level: {{ lorawanSignalLevel }}</p>
                 </article>
             </div>
 
@@ -153,6 +153,7 @@
                 checkInterval: null,
                 maxWaitTime: 60000,
                 startTime: null
+                lorawanSigalLevel = null;
             },
             mounted() {
                 document.getElementById('nextButton1').addEventListener('click', () => this.nextStep(2));
@@ -222,6 +223,7 @@
                         if (response.ok) {
                             const data = await response.json();
                             this.lorawanStatus = data.result;
+                            this.lorawanSignalLevel = data.metadata.network.lora.signalLevel;
                         }
                     } catch (error) {
                         console.error('Error fetching Lorawan status:', error);
