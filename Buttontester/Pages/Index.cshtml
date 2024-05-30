@@ -95,6 +95,7 @@
                     <i v-if="lorawanStatus === true" class="fa fa-check" style="color:green"></i>
                     <i v-if="lorawanStatus === false" class="fa fa-close" style="color:red"></i>
                     <p v-if="lorawanStatus === 'Not Found'" class="not-found">Not Found</p>
+                    <p>Antenne:{{LoraGatewayCnt}} et Qualité:{{LoraSignalLevel}}</p>
                 </article>
             </div>
 
@@ -151,6 +152,8 @@
                 sigfoxDeviceId: 'id-sigfox',
                 lorawanDeviceId: 'id-lorawan',
                 checkInterval: null,
+                LoraGatewayCnt:'ptdr',
+                LoraSignalLevel:'mdr',
                 maxWaitTime: 60000,
                 startTime: null
             },
@@ -222,6 +225,8 @@
                         if (response.ok) {
                             const data = await response.json();
                             this.lorawanStatus = data.result;
+                            this.LoraGatewayCnt = data.gatewayCnt;
+                            this.LoraSignalLevel = data.signalLevel;
                         }
                     } catch (error) {
                         console.error('Error fetching Lorawan status:', error);

@@ -2,17 +2,29 @@
 GET {{host}}/init-networks/21/loraWanDeviceId
 ###
 
-POST {{host}}/sigfox/21
+POST {{host}}/sigfox/309DB8D
 Accept: application/json
 ###
 
-POST {{host}}/lorawan/loraWanDeviceId
+POST {{host}}/lorawan/0080E11500423076
 Accept: application/json
+Accept: application/json
+Content-Type: application/json
+
+{
+    "metadata": {
+        "network": {
+            "lora": {
+                "signalLevel": 75,
+                "gatewayCnt": 3
+            }
+        }
+    }
+}
 ###
 
 GET {{host}}/sigfox/21
 ###
 
-GET {{host}}/lorawan/loraWanDeviceId
+GET {{host}}/lorawan/0080E11500423076
 ###
-
