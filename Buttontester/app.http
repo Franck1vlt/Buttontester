@@ -1,18 +1,18 @@
-@host=https://localhost:7139
-GET {{host}}/init-networks/id-sigfox/id-lorawan
+@host=http://localhost:7139
+GET {{host}}/init-networks/21/loraWanDeviceId
 ###
 
-POST {{host}}/sigfox/id-sigfox
+POST {{host}}/sigfox/21
 Accept: application/json
 ###
 
-POST {{host}}/lorawan/id-lorawan
+POST {{host}}/lorawan/loraWanDeviceId
 Accept: application/json
 ###
 
-GET {{host}}/sigfox/id-sigfox
+GET {{host}}/sigfox/21
 ###
 
-GET {{host}}/lorawan/id-lorawan
+GET {{host}}/lorawan/loraWanDeviceId
 ###
 

@@ -1,4 +1,3 @@
-using ButtonTesterLibrary;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,17 +35,6 @@ app.MapPost("/lorawan/{device}", (string device, IMemoryCache cache) =>
 app.MapGet("/sigfox/{device}", (string device, IMemoryCache cache) =>
 {
     if (device != null)
-    {
-        var result = cache.Get(device);
-        if (result == null)
-        {
-            return Results.Ok(new ResponseModel {Result = false});
-        }
-        else
-        {
-            return Results.Ok(result);
-        }
-    }
         return Results.Ok(cache.Get(device));
     return Results.NotFound();
 });

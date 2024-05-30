@@ -98,7 +98,7 @@
                 </article>
             </div>
 
-            <button class="secondary refresh"><a href="https://localhost:7139">Redémarrer un test</a></button>
+            <button class="secondary refresh" onclick="window.location.reload();">Redémarrer un test</button>
         </section>
         <dialog id="modal-example" open>
             <article>
@@ -151,7 +151,7 @@
                 sigfoxDeviceId: 'id-sigfox',
                 lorawanDeviceId: 'id-lorawan',
                 checkInterval: null,
-                maxWaitTime: 10000,
+                maxWaitTime: 60000,
                 startTime: null
             },
             mounted() {
@@ -169,6 +169,7 @@
                     this.showResults = true;
                     this.startTime = Date.now();
                     document.getElementById('modal-example').close();
+                    this.getUrlParams();
                     this.initNetworks();
                     this.checkInterval = setInterval(this.checkStatuses, 1000);
                     setTimeout(this.finishTest, this.maxWaitTime);
@@ -189,7 +190,11 @@
                     }
                     document.getElementById('modalContent' + this.currentStep).classList.remove('hidden');
                 },
-
+                getUrlParams() {
+                    const params = new URLSearchParams(window.location.search);
+                    this.sigfoxDeviceId = params.get('deviceSigfox');
+                    this.lorawanDeviceId = params.get('deviceLoraWan');
+                },
                 async checkStatuses() {
                     await this.checkSigfoxStatus();
                     await this.checkLorawanStatus();
@@ -201,7 +206,7 @@
                 async checkSigfoxStatus() {
                     if (this.sigfoxStatus) return;
                     try {
-                        const response = await fetch(`https://localhost:7139/sigfox/${this.sigfoxDeviceId}`);
+                        const response = await fetch(`http://localhost:7139/sigfox/${this.sigfoxDeviceId}`);
                         if (response.ok) {
                             const data = await response.json();
                             this.sigfoxStatus = data.result;
@@ -213,7 +218,7 @@
                 async checkLorawanStatus() {
                     if (this.lorawanStatus) return;
                     try {
-                        const response = await fetch(`https://localhost:7139/lorawan/${this.lorawanDeviceId}`);
+                        const response = await fetch(`http://localhost:7139/lorawan/${this.lorawanDeviceId}`);
                         if (response.ok) {
                             const data = await response.json();
                             this.lorawanStatus = data.result;
