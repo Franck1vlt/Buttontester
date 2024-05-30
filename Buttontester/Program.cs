@@ -1,19 +1,10 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMemoryCache();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenLocalhost(7139, listenOptions =>
-    {
-        listenOptions.UseHttps();
-    });
-    options.ListenLocalhost(5139);
-});
-
 var app = builder.Build();
 
 
@@ -35,9 +26,10 @@ app.MapPost("/sigfox/{device}", (string device, IMemoryCache cache) =>
     return Results.Ok();
 });
 
-app.MapPost("/lorawan/{device}", (string device, IMemoryCache cache) =>
+app.MapPost("/lorawan/{device}", (string device, [FromBody] LoRaWANPayload payload, IMemoryCache cache) =>
 {
     if (device != null)
+        payload.Metadata.Network.Lora.DevEUI = device;
         cache.Set(device, new { Result = true });
     return Results.Ok();
 });

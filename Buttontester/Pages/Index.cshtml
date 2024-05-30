@@ -9,154 +9,243 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buttontester</title>
-    <!-- Inclure le fichier CSS de Picocss -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css" integrity="sha512-UXfikgakSZBii5lkvmDCRO+IYWQhTtwMOJ+3EmGEA+oA82kvbSskgw3OI16Jx1kINgF8aqOkYE+c9h4m6muONg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-</head>
-<body>
-
-    <section id="modal">
-        <h2>Test d'égibilité à Sigfox et Lorawan</h2>
-        <button class="contrast" data-target="modal-example" onclick="toggleModal(event)">Démarer le test</button>
-    </section>
-
-    <dialog id="modal-example">
-      <article>
-        <header>
-          <h3>Démarer le test d'égibilité</h3>
-        </header>
-        <!-- Contenu initial -->
-        <div id="modalContent1">
-            <p>
-              Description
-            </p>
-            <!-- Bouton suivant -->
-            <button class="secondary" onclick="showNextContent(2)">Suivant</button>
-        </div>
-        <!-- Contenu 2 -->
-        <div id="modalContent2" style="display: none;">
-            <p>Guide</p>
-            <button class="secondary" onclick="showNextContent(3)">Suivant</button>
-        </div>
-        <!-- Contenu 3 -->
-        <div id="modalContent3" style="display: none;">
-            <p>Contenu 3</p>
-            <!-- Boutons Cancel et Confirm -->
-            <footer>
-              <button autofocus data-target="modal-example" onclick="launchTest()">Lancer</button>
-            </footer>
-        </div>
-      </article>
-    </dialog>
-
-    <!-- Conteneurs pour les tableaux -->
-    <section id="results" style="display: none;">
-        <h2>Résultats du test</h2>
-        <div class="flex-container">
-            <div class="column">
-                <table id="table1">
-                    <thead>
-                        <tr>
-                            <th>Sigfox</th>
-                            <th>Lorawan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Donnée 1</td>
-                            <td>Donnée 2</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-
-    <script>
-        // Config
-        const isOpenClass = "modal-is-open";
-        const openingClass = "modal-is-opening";
-        const closingClass = "modal-is-closing";
-        const scrollbarWidthCssVar = "--pico-scrollbar-width";
-        const animationDuration = 400; // ms
-        let visibleModal = null;
-
-        // Fonction pour afficher le contenu suivant
-        function showNextContent(contentNumber) {
-            // Masquer tous les contenus
-            for (let i = 1; i <= 3; i++) {
-                document.getElementById("modalContent" + i).style.display = "none";
-            }
-            // Afficher le contenu correspondant au numéro spécifié
-            document.getElementById("modalContent" + contentNumber).style.display = "block";
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        h4 {
+            color: #53afde;
+        }
+        #modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        #modal button {
+            padding: 10px 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        #results {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #results article {
+            display: inline-block;
+            margin: 10px 10px;
+            background-color: #EAEAEA;
+            width: 250px;
+            height: 175px; 
+            padding: 50px;
+            border-radius: 5px;
+            vertical-align: top; 
+            box-sizing: border-box;
         }
 
-        // Toggle modal
-        const toggleModal = (event) => {
-          event.preventDefault();
-          const modal = document.getElementById(event.currentTarget.dataset.target);
-          if (!modal) return;
-          modal && (modal.open ? closeModal(modal) : openModal(modal));
-        };
+        #results .fa, #results .not-found {
+            font-size: 24px;
+            display: block;
+            text-align: center; 
+            line-height: 24px; 
+        }
 
-        // Open modal
-        const openModal = (modal) => {
-          const { documentElement: html } = document;
-          const scrollbarWidth = getScrollbarWidth();
-          if (scrollbarWidth) {
-            html.style.setProperty(scrollbarWidthCssVar, `${scrollbarWidth}px`);
-          }
-          html.classList.add(isOpenClass, openingClass);
-          setTimeout(() => {
-            visibleModal = modal;
-            html.classList.remove(openingClass);
-          }, animationDuration);
-          modal.showModal();
-        };
+        #error-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .spinner {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .refresh {
+            margin-top: 20px;
+            color: white;
+        }
+        a {
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <section id="modal">
+            <!-- Texte à afficher après la fermeture du modal -->
+            <div v-if="showResults" id="results">
+                <h2>Test d'éligibilité à Sigfox et LoRaWAN</h2>
+                <h3>Résultats :</h3>
+                <article>
+                    <h4>Sigfox</h4>
+                    <div v-if="showSpinner && sigfoxStatus === null" class="spinner">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                    <i v-if="sigfoxStatus === true" class="fa fa-check" style="color:green"></i>
+                    <i v-if="sigfoxStatus === false" class="fa fa-close" style="color:red"></i>
+                    <p v-if="sigfoxStatus === 'Not Found'" class="not-found">Not Found</p>
+                </article>
+                <article>
+                    <h4>LoRaWAN</h4>
+                    <div v-if="showSpinner && lorawanStatus === null" class="spinner">
+                        <i class="fa fa-spinner fa-spin"></i>
+                    </div>
+                    <i v-if="lorawanStatus === true" class="fa fa-check" style="color:green"></i>
+                    <i v-if="lorawanStatus === false" class="fa fa-close" style="color:red"></i>
+                    <p v-if="lorawanStatus === 'Not Found'" class="not-found">Not Found</p>
+                </article>
+            </div>
 
-        // Close modal
-        const closeModal = (modal) => {
-          visibleModal = null;
-          const { documentElement: html } = document;
-          html.classList.add(closingClass);
-          setTimeout(() => {
-            html.classList.remove(closingClass, isOpenClass);
-            html.style.removeProperty(scrollbarWidthCssVar);
-            modal.close();
-          }, animationDuration);
-        };
-
-        // Close with Esc key
-        document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape" && visibleModal) {
-            closeModal(visibleModal);
-          }
+            <button class="secondary refresh" onclick="window.location.reload();">Redémarrer un test</button>
+        </section>
+        <dialog id="modal-example" open>
+            <article>
+                <!-- Accueil -->
+                <div id="modalContent1">
+                    <h4>Bienvenue sur le Test d'éligibilité</h4>
+                    <p>
+                        Vous allez maintenant procéder au test d'éligibilité de votre capteur à Sigfox et LoRaWAN.
+                    </p>
+                    <!-- Bouton suivant -->
+                    <button class="secondary" id="nextButton1">Suivant</button>
+                </div>
+                <!-- Placer le bouton -->
+                <div id="modalContent2" class="hidden">
+                    <h4>Placer le bouton</h4>
+                    <p>Placer le bouton à la place de votre futur capteur.</p>
+                    <!-- Bouton suivant -->
+                    <button class="secondary" id="nextButton2">Suivant</button>
+                </div>
+                <!-- Appuyer sur le bouton -->
+                <div id="modalContent3" class="hidden">
+                    <h4>Appuyer sur le bouton</h4>
+                    <p>Veuillez maintenant appuyer sur le bouton puis appuyez sur lancer.</p>
+                    <!-- Boutons Lancer-->
+                    <footer>
+                        <button id="launchButton">Lancer</button>
+                    </footer>
+                </div>
+            </article>
+        </dialog>
+        <dialog id="error-modal">
+            <div id="error-content">
+                <h2>Erreur d'initialisation</h2>
+                <p id="error-message"></p>
+                <button id="refreshButton">Rafraîchir la page</button>
+            </div>
+        </dialog>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                currentStep: 1,
+                isModalOpen: true,
+                showResults: false,
+                showSpinner: false,
+                sigfoxStatus: null,
+                lorawanStatus: null,
+                sigfoxDeviceId: 'id-sigfox',
+                lorawanDeviceId: 'id-lorawan',
+                checkInterval: null,
+                maxWaitTime: 60000,
+                startTime: null
+            },
+            mounted() {
+                document.getElementById('nextButton1').addEventListener('click', () => this.nextStep(2));
+                document.getElementById('nextButton2').addEventListener('click', () => this.nextStep(3));
+                document.getElementById('launchButton').addEventListener('click', this.startTest);
+            },
+            methods: {
+                nextStep(step) {
+                    this.currentStep = step;
+                    this.updateModalContent();
+                },
+                startTest() {
+                    this.showSpinner = true;
+                    this.showResults = true;
+                    this.startTime = Date.now();
+                    document.getElementById('modal-example').close();
+                    this.getUrlParams();
+                    this.initNetworks();
+                    this.checkInterval = setInterval(this.checkStatuses, 1000);
+                    setTimeout(this.finishTest, this.maxWaitTime);
+                },
+                finishTest() {
+                    if (this.sigfoxStatus === null) {
+                        this.sigfoxStatus = 'Not Found';
+                    }
+                    if (this.lorawanStatus === null) {
+                        this.lorawanStatus = 'Not Found';
+                    }
+                    this.showSpinner = false;
+                    clearInterval(this.checkInterval);
+                },
+                updateModalContent() {
+                    for (let i = 1; i <= 3; i++) {
+                        document.getElementById('modalContent' + i).classList.add('hidden');
+                    }
+                    document.getElementById('modalContent' + this.currentStep).classList.remove('hidden');
+                },
+                getUrlParams() {
+                    const params = new URLSearchParams(window.location.search);
+                    this.sigfoxDeviceId = params.get('deviceSigfox');
+                    this.lorawanDeviceId = params.get('deviceLoraWan');
+                },
+                async checkStatuses() {
+                    await this.checkSigfoxStatus();
+                    await this.checkLorawanStatus();
+                    if (this.sigfoxStatus && this.lorawanStatus) {
+                        clearInterval(this.checkInterval);
+                        setTimeout(this.finishTest, 0);
+                    }
+                },
+                async checkSigfoxStatus() {
+                    if (this.sigfoxStatus) return;
+                    try {
+                        const response = await fetch(`/sigfox/${this.sigfoxDeviceId}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.sigfoxStatus = data.result;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching Sigfox status:', error);
+                    }
+                },
+                async checkLorawanStatus() {
+                    if (this.lorawanStatus) return;
+                    try {
+                        const response = await fetch(`/lorawan/${this.lorawanDeviceId}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.lorawanStatus = data.result;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching Lorawan status:', error);
+                    }
+                },
+                async initNetworks() {
+                    try {
+                        const response = await fetch(`/init-networks/${this.sigfoxDeviceId}/${this.lorawanDeviceId}`);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        console.log('Networks initialized successfully.');
+                    } catch (error) {
+                        console.error('Error initializing networks:', error);
+                    }
+                },
+                showErrorModal(error) {
+                    this.errorMessage = error.message;
+                    document.getElementById('error-message').innerText = this.errorMessage;
+                    document.getElementById('error-modal').showModal();
+                    document.getElementById('refreshButton').addEventListener('click', () => location.reload());
+                }
+            }
         });
-
-        // Get scrollbar width
-        const getScrollbarWidth = () => {
-          const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-          return scrollbarWidth;
-        };
-
-        // // Is scrollbar visible
-        // const isScrollbarVisible = () => {
-        //   return document.body.scrollHeight > screen.height;
-        // };
-
-        // Fonction pour lancer le test et afficher les tableaux
-        const launchTest = () => {
-            closeModal(document.getElementById("modal-example"));
-            document.getElementById("results").style.display = "block";
-        };
-
     </script>
-
 </body>
 </html>
-
-
-
-
-
-
