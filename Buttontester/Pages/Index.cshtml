@@ -260,28 +260,20 @@
             }
         });
  
-        let watchId; // Pour stocker l'ID de la surveillance
         let showLatitude = true; // Variable de commutation pour suivre l'état de l'affichage
 
         window.addEventListener('load', () => {
             if (navigator.geolocation) {
                 // Commence à surveiller la position de l'utilisateur
-                startWatchingPosition();
+                navigator.geolocation.watchPosition(showPosition, showError, {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 5000
+                });
             } else {
                 document.getElementById('location').innerText = "Geolocation is not supported by this browser.";
             }
         });
-
-        function startWatchingPosition() {
-            // Commence à surveiller la position de l'utilisateur
-            watchId = navigator.geolocation.watchPosition(showPosition, showError);
-    
-            // Actualise la position toutes les 5 secondes
-            setInterval(() => {
-                navigator.geolocation.clearWatch(watchId); // Efface la surveillance précédente
-                watchId = navigator.geolocation.watchPosition(showPosition, showError); // Commence une nouvelle surveillance
-            }, 5000);
-        }
 
         function showPosition(position) {
             let latitude, longitude;
@@ -292,6 +284,9 @@
                 latitude = position.coords.longitude; // Inverse latitude et longitude
                 longitude = position.coords.latitude;
             }
+
+            // Efface l'élément texte avant d'afficher la nouvelle position
+            document.getElementById('location').innerText = '';
 
             document.getElementById('location').innerText = `Latitude: ${latitude}, Longitude: ${longitude}`;
             showLatitude = !showLatitude; // Inverse l'état de l'affichage pour la prochaine actualisation
@@ -313,6 +308,7 @@
                     break;
             }
         }
+
     </script>
 </body>
 </html>
