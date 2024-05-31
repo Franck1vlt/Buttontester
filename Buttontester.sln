@@ -6,9 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Buttontester", "Buttontester\Buttontester.csproj", "{D4C035F5-C071-49EF-B249-F84512A0CCF8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{0C6ACE38-A13E-40B9-BF89-B9A23FF8A905}"
-	ProjectSection(SolutionItems) = preProject
-		LoRaWANPayload.cs = LoRaWANPayload.cs
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

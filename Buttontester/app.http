@@ -4,6 +4,15 @@ GET {{host}}/init-networks/309DB8D/0080E11500423076
 
 POST {{host}}/sigfox/309DB8D
 Accept: application/json
+Content-Type: application/json
+{
+    "lqi": "Average",
+    "duplicates": [
+        {"bsId": "27EF", "rssi": -134, "nbRep": 2},
+        {"bsId": "2797", "rssi": -132, "nbRep": 2},
+        {"bsId": "2789", "rssi": -147, "nbRep": 1}
+    ]
+}
 ###
 
 POST {{host}}/lorawan/0080E11500423076

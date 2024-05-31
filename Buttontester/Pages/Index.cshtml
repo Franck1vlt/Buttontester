@@ -11,6 +11,7 @@
     <title>Buttontester</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/2.0.6/pico.min.css" integrity="sha512-UXfikgakSZBii5lkvmDCRO+IYWQhTtwMOJ+3EmGEA+oA82kvbSskgw3OI16Jx1kINgF8aqOkYE+c9h4m6muONg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/geo-location-javascript/0.4.8/geo.js" integrity="sha512-2DQQKauN/4TxnFSftXZH1NY+/+8tDaqIM8VyppLRTLIAJgZ3KJy9ztGEuukRb995VXQsrQqWUSUlGPK8pPuxMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         h4 {
             color: #53afde;
@@ -37,11 +38,12 @@
             margin: 10px 10px;
             background-color: #EAEAEA;
             width: 275px;
-            height: 170px; 
+            height: 200px; 
             padding: 50px;
             border-radius: 5px;
             vertical-align: top; 
             box-sizing: border-box;
+            margin-bottom: 30px;
         }
 
         #results .fa, #results .not-found {
@@ -83,22 +85,24 @@
                     <div v-if="showSpinner && sigfoxStatus === null" class="spinner">
                         <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                    <i v-if="sigfoxStatus === true" class="fa fa-check" style="color:green"></i>
-                    <i v-if="sigfoxStatus === false" class="fa fa-close" style="color:red"></i>
-                    <p v-if="sigfoxStatus === 'Not Found'" class="not-found">Not Found</p>
+                    <div v-if="sigfoxStatus !== null && sigfoxStatus !== 'Not Found'">
+                        <p><strong>Qualité: {{SigfoxSignalLevel}} ({{SigfoxGatewayCnt}} antennes)</strong></p>
+                    </div>
+                    <p v-if="lorawanStatus === 'Not Found'" class="not-found">Not Found</p>
                 </article>
                 <article>
                     <h4>LoRaWAN</h4>
                     <div v-if="showSpinner && lorawanStatus === null" class="spinner">
                         <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                    <div v-if="lorawanStatus !== null">
-						<p><strong>Qualité: {{LoraSignalLevel}} ({{LoraGatewayCnt}} antennes)</strong></p>
-					</div>
+                    <div v-if="lorawanStatus !== null && lorawanStatus !== 'Not Found'">
+                        <p><strong>Qualité: {{LoraSignalLevel}} ({{LoraGatewayCnt}} antennes)</strong></p>
+                    </div>
                     <p v-if="lorawanStatus === 'Not Found'" class="not-found">Not Found</p>
                 </article>
             </div>
-
+			<h3>Localisation :</h3>
+            <p id="location"></p>
             <button class="secondary refresh" onclick="window.location.reload();">Redémarrer un test</button>
         </section>
         <dialog id="modal-example" open>
@@ -154,6 +158,8 @@
                 checkInterval: null,
                 LoraGatewayCnt: null,
                 LoraSignalLevel: null,
+                SigfoxGatewayCnt: null,
+                SigfoxSignalLevel: null,
                 maxWaitTime: 60000,
                 startTime: null
             },
@@ -213,6 +219,8 @@
                         if (response.ok) {
                             const data = await response.json();
                             this.sigfoxStatus = data.result;
+                            this.SigfoxGatewayCnt = data.gatewayCnt;
+                            this.SigfoxSignalLevel = data.signalLevel;
                         }
                     } catch (error) {
                         console.error('Error fetching Sigfox status:', error);
@@ -251,6 +259,60 @@
                 }
             }
         });
+ 
+        let watchId; // Pour stocker l'ID de la surveillance
+        let showLatitude = true; // Variable de commutation pour suivre l'état de l'affichage
+
+        window.addEventListener('load', () => {
+            if (navigator.geolocation) {
+                // Commence à surveiller la position de l'utilisateur
+                startWatchingPosition();
+            } else {
+                document.getElementById('location').innerText = "Geolocation is not supported by this browser.";
+            }
+        });
+
+        function startWatchingPosition() {
+            // Commence à surveiller la position de l'utilisateur
+            watchId = navigator.geolocation.watchPosition(showPosition, showError);
+    
+            // Actualise la position toutes les 5 secondes
+            setInterval(() => {
+                navigator.geolocation.clearWatch(watchId); // Efface la surveillance précédente
+                watchId = navigator.geolocation.watchPosition(showPosition, showError); // Commence une nouvelle surveillance
+            }, 5000);
+        }
+
+        function showPosition(position) {
+            let latitude, longitude;
+            if (showLatitude) {
+                latitude = position.coords.latitude;
+                longitude = position.coords.longitude;
+            } else {
+                latitude = position.coords.longitude; // Inverse latitude et longitude
+                longitude = position.coords.latitude;
+            }
+
+            document.getElementById('location').innerText = `Latitude: ${latitude}, Longitude: ${longitude}`;
+            showLatitude = !showLatitude; // Inverse l'état de l'affichage pour la prochaine actualisation
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById('location').innerText = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById('location').innerText = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById('location').innerText = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById('location').innerText = "An unknown error occurred.";
+                    break;
+            }
+        }
     </script>
 </body>
 </html>

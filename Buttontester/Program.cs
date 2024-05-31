@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,10 +20,15 @@ app.MapGet("/init-networks/{deviceSigfox}/{deviceLoraWan}", (string deviceSigfox
         cache.Remove(deviceLoraWan);
     return Results.Ok();
 });
-app.MapPost("/sigfox/{device}", (string device, IMemoryCache cache) =>
+
+app.MapPost("/sigfox/{device}", (string device, [FromBody] SigfoxPayload payload, IMemoryCache cache) =>
 {
     if (device != null)
-        cache.Set(device, new { Result = true });
+    {
+        int duplicateCount = payload.Duplicates.Count;
+        string Lqi = payload.Lqi;
+        cache.Set(device, new { Result = true, SignalLevel = Lqi, GatewayCnt = duplicateCount });
+    }
     return Results.Ok();
 });
 
