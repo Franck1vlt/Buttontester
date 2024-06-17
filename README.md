@@ -1,5 +1,7 @@
 # Buttontester
 
+![alt text](image.png)
+
 This is a web application that tests the network eligibility for Sigfox and LoRaWAN. The application is built using Vue.js for the frontend, Pico CSS for styling, and C# with .NET for the backend.
 
 To use the application, simply click on the button and it will perform a network eligibility test. The results will be displayed on the screen, indicating whether the network is eligible for Sigfox and LoRaWAN or not.
