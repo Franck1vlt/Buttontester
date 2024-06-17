@@ -1,8 +1,8 @@
 @host=http://localhost:7139
-GET {{host}}/init-networks/309DB8D/0080E11500423076
+GET {{host}}/init-networks/sigfoxID/lorawanID
 ###
 
-POST {{host}}/sigfox/309DB8D
+POST {{host}}/sigfox/sigfoxID
 Accept: application/json
 Content-Type: application/json
 {
@@ -15,7 +15,7 @@ Content-Type: application/json
 }
 ###
 
-POST {{host}}/lorawan/0080E11500423076
+POST {{host}}/lorawan/lorawanID
 Accept: application/json
 Content-Type: application/json
 {
@@ -30,8 +30,8 @@ Content-Type: application/json
 }
 ###
 
-GET {{host}}/sigfox/309DB8D
+GET {{host}}/sigfox/sigfoxID
 ###
 
-GET {{host}}/lorawan/0080E11500423076
+GET {{host}}/lorawan/lorawanID
 ###
